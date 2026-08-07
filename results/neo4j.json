@@ -1,27 +1,27 @@
 {
-  "database" : "CognoDB",
+  "database" : "Neo4j",
   "nodeCount" : 91489,
   "relationshipCount" : 200000,
   "loadTimeMs" : 0,
   "nodesPerSecond" : 0.0,
   "relationshipsPerSecond" : 0.0,
   "p50" : {
-    "1-hop" : 1302.367,
-    "2-hop" : 1019.3455,
-    "3-hop" : 1019.906,
-    "point-lookup" : 1206.216,
-    "filtered-lookup" : 1075.5025,
-    "aggregation" : 1052.741
+    "1-hop" : 29.6595,
+    "2-hop" : 27.4315,
+    "3-hop" : 26.097,
+    "point-lookup" : 25.866,
+    "filtered-lookup" : 75.131,
+    "aggregation" : 26.649
   },
   "p95" : {
-    "1-hop" : 5527.399799999988,
-    "2-hop" : 2650.24595,
-    "3-hop" : 1870.4898999999998,
-    "point-lookup" : 3485.9218499999997,
-    "filtered-lookup" : 2069.2162999999996,
-    "aggregation" : 1681.5871999999997
+    "1-hop" : 37.09510000000001,
+    "2-hop" : 36.021550000000005,
+    "3-hop" : 32.61409999999999,
+    "point-lookup" : 33.04249999999999,
+    "filtered-lookup" : 142.00529999999995,
+    "aggregation" : 38.9287
   },
-  "mixedQueriesPerSecond" : 4.3074478164241,
+  "mixedQueriesPerSecond" : 152.0780314812779,
   "warmupIterations" : 20,
   "measurementIterations" : 100,
   "concurrency" : 10,

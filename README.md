@@ -1,1138 +1,399 @@
-\# WEXA AI Ã¢â‚¬â€œ Graph Database Cloud Benchmark
+# WEXA AI — Graph Database Cloud Benchmark
 
+## Overview
 
+This project benchmarks graph database performance using a fixed social-network dataset and a consistent workload methodology.
 
-A Java 17 benchmark application for evaluating graph database performance using a common database adapter architecture.
+The benchmark currently includes completed benchmark runs for:
 
+* **Neo4j**
+* **CognoDB Cloud**
 
+The project also contains adapter implementations for FalkorDB and Memgraph, but benchmark results for those databases were not included in this execution.
 
-The current implementation has been successfully executed against \*\*CognoDB\*\* using a dataset containing \*\*91,489 nodes\*\* and \*\*200,000 relationships\*\*.
+The primary goal is to compare graph database performance under common graph workloads using the same dataset, query patterns, warm-up configuration, measurement iterations, and concurrency.
 
+---
 
+## Dataset
 
-\---
+The benchmark uses a fixed subset derived from the **SNAP soc-Pokec social network dataset**.
 
+### Dataset size
 
+| Metric            |    Value |
+| ----------------- | -------: |
+| Nodes             |   91,489 |
+| Relationships     |  200,000 |
+| Relationship type |  `KNOWS` |
+| Node label        | `Person` |
 
-\## Requirements
+The same dataset size was verified successfully in both Neo4j and CognoDB.
 
-
-
-\* Java 17
-
-\* Maven Wrapper
-
-\* Internet access to the configured graph database
-
-\* CognoDB credentials
-
-
-
-\---
-
-
-
-\## Project Structure
-
-
+### Dataset files
 
 ```text
-
-cognodb-benchmark/
-
-Ã¢â€â€š
-
-Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ src/
-
-Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ main/
-
-Ã¢â€â€š       Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ java/
-
-Ã¢â€â€š           Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ com/
-
-Ã¢â€â€š               Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ wexa/
-
-Ã¢â€â€š                   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ benchmark/
-
-Ã¢â€â€š                       Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ adapters/
-
-Ã¢â€â€š                       Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ CognoDBAdapter.java
-
-Ã¢â€â€š                       Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ Neo4jAdapter.java
-
-Ã¢â€â€š                       Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ MemgraphAdapter.java
-
-Ã¢â€â€š                       Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ FalkorDBAdapter.java
-
-Ã¢â€â€š                       Ã¢â€â€š
-
-Ã¢â€â€š                       Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ BenchmarkApplication.java
-
-Ã¢â€â€š                       Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ BenchmarkConfig.java
-
-Ã¢â€â€š                       Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ BenchmarkResult.java
-
-Ã¢â€â€š                       Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ BenchmarkRunner.java
-
-Ã¢â€â€š                       Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ DatabaseAdapter.java
-
-Ã¢â€â€š
-
-Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ results/
-
-Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ cognodb.json
-
-Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ README.md
-
-Ã¢â€â€š
-
-Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ .env.example
-
-Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ .gitignore
-
-Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ pom.xml
-
-Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ README.md
-
-Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ mvnw.cmd
-
+data/
+├── nodes.csv
+├── relationships.csv
+└── soc-pokec-relationships.txt.gz
 ```
 
+---
 
+## Benchmark Configuration
 
-\---
+The benchmark uses the following configuration:
 
+| Configuration          |     Value |
+| ---------------------- | --------: |
+| Warm-up iterations     |        20 |
+| Measurement iterations |       100 |
+| Concurrency            |        10 |
+| Read/write mix         | 80% / 20% |
+| Random seed            |  20260806 |
 
+A fixed random seed is used for reproducible start-node selection.
 
-\## Configuration
+---
 
+## Workloads
 
+The following workloads were executed:
 
-The benchmark uses environment variables for database credentials.
+### 1. 1-hop traversal
 
+Find neighboring nodes one relationship away from a selected starting node.
 
+### 2. 2-hop traversal
 
-Required variables:
+Traverse two `KNOWS` relationships from the starting node.
 
+### 3. 3-hop traversal
 
+Traverse three `KNOWS` relationships from the starting node.
+
+### 4. Point lookup
+
+Find a `Person` node using its indexed ID.
+
+### 5. Filtered lookup
+
+Find nodes using the `name` property.
+
+### 6. Aggregation
+
+Count nodes in the graph.
+
+### 7. Mixed workload
+
+A concurrent workload consisting of:
+
+* 80% read operations
+* 20% write operations
+* 10 concurrent clients
+
+The benchmark reports queries per second (QPS) for the mixed workload.
+
+---
+
+# Benchmark Results
+
+## Neo4j
+
+Dataset verification:
 
 ```text
-
-COGNODB\_URI
-
-COGNODB\_USERNAME
-
-COGNODB\_PASSWORD
-
+Nodes: 91489
+Relationships: 200000
+Dataset verification PASSED
 ```
 
-
-
-Example:
-
-
-
-```text
-
-COGNODB\_URI=bolt+s://your-cognodb-host
-
-COGNODB\_USERNAME=your-username
-
-COGNODB\_PASSWORD=your-password
-
-```
-
-
-
-\*\*Real credentials must never be committed to the repository.\*\*
-
-
-
-Do not commit:
-
-
-
-\* Database passwords
-
-\* API keys
-
-\* Private connection strings
-
-\* Cloud credentials
-
-\* `.env` files
-
-
-
-\---
-
-
-
-\## Build
-
-
-
-The project uses the Maven Wrapper.
-
-
-
-On Windows:
-
-
-
-```powershell
-
-.\\mvnw.cmd clean package -DskipTests
-
-```
-
-
-
-Expected result:
-
-
-
-```text
-
-BUILD SUCCESS
-
-```
-
-
-
-The executable JAR is generated at:
-
-
-
-```text
-
-target/cognodb-benchmark-1.0.0.jar
-
-```
-
-
-
-The current project was successfully compiled using Java 17.
-
-
-
-\---
-
-
-
-\## Running the Benchmark
-
-
-
-Set the environment variables in PowerShell:
-
-
-
-```powershell
-
-$env:COGNODB\_URI="your-uri"
-
-$env:COGNODB\_USERNAME="your-username"
-
-$env:COGNODB\_PASSWORD="your-password"
-
-```
-
-
-
-Verify that the variables are configured without displaying their values:
-
-
-
-```powershell
-
-Write-Host "URI set:" (\[string]::IsNullOrWhiteSpace($env:COGNODB\_URI) -eq $false)
-
-Write-Host "Username set:" (\[string]::IsNullOrWhiteSpace($env:COGNODB\_USERNAME) -eq $false)
-
-Write-Host "Password set:" (\[string]::IsNullOrWhiteSpace($env:COGNODB\_PASSWORD) -eq $false)
-
-```
-
-
-
-Run the benchmark:
-
-
-
-```powershell
-
-java -jar target\\cognodb-benchmark-1.0.0.jar
-
-```
-
-
-
-\---
-
-
-
-\## Benchmark Configuration
-
-
-
-The current benchmark configuration is:
-
-
-
-```text
-
-Warm-up iterations:       20
-
-Measurement iterations:  100
-
-Concurrent clients:       10
-
-Read/write mix:          80/20
-
-Nodes:                 91,489
-
-Relationships:        200,000
-
-```
-
-
-
-The benchmark reuses the existing dataset during normal execution.
-
-
-
-\---
-
-
-
-\## Workloads
-
-
-
-The benchmark currently measures the following workloads.
-
-
-
-\### 1-Hop Traversal
-
-
-
-Traverses outgoing `KNOWS` relationships from a selected starting node for one hop.
-
-
-
-```text
-
-(start)-\[:KNOWS]->(target)
-
-```
-
-
-
-\---
-
-
-
-\### 2-Hop Traversal
-
-
-
-Traverses two outgoing `KNOWS` relationships.
-
-
-
-```text
-
-(start)-\[:KNOWS]->()-\[:KNOWS]->(target)
-
-```
-
-
-
-\---
-
-
-
-\### 3-Hop Traversal
-
-
-
-Traverses three outgoing `KNOWS` relationships.
-
-
-
-```text
-
-(start)-\[:KNOWS]->()-\[:KNOWS]->()-\[:KNOWS]->(target)
-
-```
-
-
-
-The 3-hop query uses a bounded result set:
-
-
-
-```text
-
-LIMIT 100
-
-```
-
-
-
-This prevents the benchmark from unnecessarily enumerating a very large number of paths.
-
-
-
-\---
-
-
-
-\### Point Lookup
-
-
-
-Finds a `Person` node using its indexed `id` property.
-
-
-
-\---
-
-
-
-\### Filtered Lookup
-
-
-
-Finds `Person` nodes using the `name` property.
-
-
-
-\---
-
-
-
-\### Aggregation
-
-
-
-Executes a graph aggregation query over `Person` nodes.
-
-
-
-\---
-
-
-
-\### Mixed Workload
-
-
-
-The mixed workload executes operations concurrently using:
-
-
-
-```text
-
-Concurrent clients: 10
-
-Read operations:    approximately 80%
-
-Write operations:   approximately 20%
-
-```
-
-
-
-Performance is reported as queries per second.
-
-
-
-\---
-
-
-
-\## Indexes
-
-
-
-The benchmark creates/verifies an index for:
-
-
-
-```text
-
-Person.id
-
-```
-
-
-
-The `id` index supports point lookup and traversal starting-node lookup operations.
-
-
-
-The benchmark also performs filtered lookup using:
-
-
-
-```text
-
-Person.name
-
-```
-
-
-
-If a dedicated `name` index is added in a future revision, the README and benchmark implementation should be updated accordingly.
-
-
-
-\---
-
-
-
-\# CognoDB Results
-
-
-
-The latest successful benchmark execution produced the following measurements:
-
-
+### Latency
 
 | Workload        | p50 (ms) | p95 (ms) |
-
 | --------------- | -------: | -------: |
+| 1-hop           |    29.66 |    37.10 |
+| 2-hop           |    27.43 |    36.02 |
+| 3-hop           |    26.10 |    32.61 |
+| Point lookup    |    25.87 |    33.04 |
+| Filtered lookup |    75.13 |   142.01 |
+| Aggregation     |    26.65 |    38.93 |
 
-| 1-hop           | 1228.467 | 1532.337 |
-
-| 2-hop           | 1228.449 | 1594.486 |
-
-| 3-hop           | 1227.496 | 1637.764 |
-
-| Point lookup    | 1230.397 | 3199.029 |
-
-| Filtered lookup | 1228.852 | 1945.404 |
-
-| Aggregation     | 1228.654 | 1696.725 |
-
-
-
-\### Mixed Workload
-
-
+### Mixed workload
 
 ```text
-
-6.912 queries/sec
-
+152.08 queries/sec
 ```
 
+---
 
+## CognoDB Cloud
 
-These values are measurements from the current CognoDB benchmark execution.
-
-
-
-They should \*\*not\*\* be interpreted as universal CognoDB performance characteristics.
-
-
-
-Network latency, cloud instance resources, database configuration, dataset distribution, and workload characteristics can significantly affect benchmark results.
-
-
-
-\---
-
-
-
-\## Dataset
-
-
-
-The benchmark currently uses:
-
-
+Dataset verification:
 
 ```text
-
-Nodes:          91,489
-
-Relationships: 200,000
-
+Nodes: 91489
+Relationships: 200000
+Dataset verification PASSED
 ```
 
+### Latency
 
+| Workload        | p50 (ms) | p95 (ms) |
+| --------------- | -------: | -------: |
+| 1-hop           |  1302.37 |  5527.40 |
+| 2-hop           |  1019.35 |  2650.25 |
+| 3-hop           |  1019.91 |  1870.49 |
+| Point lookup    |  1206.22 |  3485.92 |
+| Filtered lookup |  1075.50 |  2069.22 |
+| Aggregation     |  1052.74 |  1681.59 |
 
-The current execution intentionally reused the existing CognoDB dataset.
-
-
-
-The benchmark therefore reported:
-
-
+### Mixed workload
 
 ```text
-
-loadTimeMs = 0
-
-nodesPerSecond = 0
-
-relationshipsPerSecond = 0
-
+4.31 queries/sec
 ```
 
+---
 
+# Neo4j vs CognoDB
 
-These values \*\*do not mean that database loading took zero time\*\*.
+| Workload        | Neo4j p50 | CognoDB p50 |
+| --------------- | --------: | ----------: |
+| 1-hop           |  29.66 ms |  1302.37 ms |
+| 2-hop           |  27.43 ms |  1019.35 ms |
+| 3-hop           |  26.10 ms |  1019.91 ms |
+| Point lookup    |  25.87 ms |  1206.22 ms |
+| Filtered lookup |  75.13 ms |  1075.50 ms |
+| Aggregation     |  26.65 ms |  1052.74 ms |
 
+### Mixed workload comparison
 
+| Database |    QPS |
+| -------- | -----: |
+| Neo4j    | 152.08 |
+| CognoDB  |   4.31 |
 
-They mean that dataset ingestion was \*\*not performed during the current benchmark execution\*\*.
+Under this benchmark configuration, Neo4j achieved substantially lower latency and higher mixed-workload throughput than the measured CognoDB environment.
 
+These results should be interpreted as measurements from this specific benchmark configuration and deployment environment rather than as a universal ranking of the database products.
 
+---
 
-The original dataset loading process took approximately 2.5 hours. Therefore, the current benchmark avoids clearing and reloading the existing benchmark dataset during every execution.
-
-
-
-A separate clean-database ingestion benchmark would be required to measure:
-
-
-
-\* Dataset loading time
-
-\* Nodes per second
-
-\* Relationships per second
-
-\* Ingestion throughput
-
-
-
-\---
-
-
-
-\## Result File
-
-
-
-The machine-readable benchmark result is stored at:
-
-
+# Project Structure
 
 ```text
-
-results/cognodb.json
-
+cognodb-benchmark/
+│
+├── data/
+│   ├── nodes.csv
+│   ├── relationships.csv
+│   └── soc-pokec-relationships.txt.gz
+│
+├── docker/
+│
+├── results/
+│   ├── cognodb.json
+│   └── neo4j.json
+│
+├── scripts/
+│   ├── generate-dataset.py
+│   └── run-benchmark.ps1
+│
+├── src/
+│   └── main/
+│       └── java/
+│           └── com/
+│               └── wexa/
+│                   └── benchmark/
+│                       ├── BenchmarkApplication.java
+│                       ├── BenchmarkConfig.java
+│                       ├── BenchmarkResult.java
+│                       ├── BenchmarkRunner.java
+│                       ├── DatabaseAdapter.java
+│                       │
+│                       └── adapters/
+│                           ├── CognoDBAdapter.java
+│                           ├── FalkorDBAdapter.java
+│                           ├── MemgraphAdapter.java
+│                           └── Neo4jAdapter.java
+│
+├── .env.example
+├── .gitignore
+├── pom.xml
+└── README.md
 ```
 
+---
 
+# Reproducibility
 
-The result contains:
+## Requirements
 
+* Java 17+
+* Maven Wrapper
+* Docker
+* PowerShell
+* Access to the target graph database
+* Valid database credentials
 
+The project uses Maven and can be built with:
 
-\* Database name
+```powershell
+.\mvnw.cmd clean package
+```
 
-\* Node count
+Successful compilation produces:
 
-\* Relationship count
+```text
+target/cognodb-benchmark-1.0.0.jar
+```
 
-\* p50 latency
+---
 
-\* p95 latency
+## Environment Variables
 
-\* Mixed workload QPS
-
-\* Benchmark notes
-
-
+Credentials must not be committed to the repository.
 
 Example:
 
-
-
-```json
-
-{
-
-&#x20; "database": "CognoDB",
-
-&#x20; "nodeCount": 91489,
-
-&#x20; "relationshipCount": 200000,
-
-&#x20; "mixedQueriesPerSecond": 6.911550145447526
-
-}
-
+```text
+COGNODB_URI=<CognoDB URI>
+COGNODB_USERNAME=<username>
+COGNODB_PASSWORD=<password>
 ```
 
-
-
-The complete benchmark result should be read from:
-
-
+Neo4j uses:
 
 ```text
-
-results/cognodb.json
-
+NEO4J_URI=<Neo4j URI>
+NEO4J_USERNAME=<username>
+NEO4J_PASSWORD=<password>
 ```
 
+Actual passwords should remain local and must never be committed to Git.
 
+---
 
-\---
+# Benchmark Methodology
 
+The benchmark follows these steps:
 
+1. Connect to the database.
+2. Verify the expected dataset.
+3. Verify/create the node ID index.
+4. Execute warm-up operations.
+5. Execute the measurement iterations.
+6. Record individual operation latency.
+7. Calculate p50 and p95 latency.
+8. Execute the concurrent mixed workload.
+9. Calculate mixed-workload QPS.
+10. Store the benchmark result as JSON.
 
-\## Reproducibility
+The benchmark intentionally avoids fabricating ingestion throughput when the existing dataset is reused.
 
-
-
-The benchmark uses a fixed dataset and fixed benchmark configuration.
-
-
-
-Current configuration:
-
-
+For the reported runs, the dataset was already present in the database and therefore:
 
 ```text
-
-Nodes:                 91,489
-
-Relationships:        200,000
-
-Warm-up iterations:       20
-
-Measurement iterations:  100
-
-Concurrency:              10
-
-Read/write mix:        80/20
-
+loadTimeMs = 0
 ```
 
+does not represent a zero-millisecond ingestion operation. It indicates that ingestion was not measured during that benchmark execution.
 
+---
 
-The same Java benchmark application can be executed again against the same database configuration.
+# Result Files
 
-
-
-Because cloud database performance can vary over time, repeated executions may produce different latency and throughput values.
-
-
-
-\---
-
-
-
-\## Database Adapter Architecture
-
-
-
-The benchmark defines a common:
-
-
+Benchmark results are stored under:
 
 ```text
-
-DatabaseAdapter
-
+results/
+├── cognodb.json
+└── neo4j.json
 ```
 
+The JSON result contains:
 
+* Database name
+* Node count
+* Relationship count
+* p50 latency
+* p95 latency
+* Mixed workload QPS
+* Warm-up iterations
+* Measurement iterations
+* Concurrency
+* Dataset description
+* Benchmark methodology
+* Environment metadata where available
 
-interface.
+---
 
+# Database Adapter Architecture
 
+The benchmark uses a common `DatabaseAdapter` interface.
 
-The interface provides operations such as:
+Each database adapter provides operations for:
 
+* Connection
+* Dataset loading
+* Dataset clearing
+* Node counting
+* Relationship counting
+* Index creation
+* Point lookup
+* Filtered lookup
+* Graph traversal
+* Aggregation
+* Write operations
+* Connection cleanup
 
+This allows the same benchmark runner to execute consistent workloads against different graph database implementations.
+
+---
+
+# Completed Benchmark Coverage
+
+| Database | Adapter | Dataset verified | Benchmark executed | Result file            |
+| -------- | ------- | ---------------- | ------------------ | ---------------------- |
+| Neo4j    | Yes     | Yes              | Yes                | `results/neo4j.json`   |
+| CognoDB  | Yes     | Yes              | Yes                | `results/cognodb.json` |
+| FalkorDB | Yes     | Not executed     | Not executed       | —                      |
+| Memgraph | Yes     | Not executed     | Not executed       | —                      |
+
+FalkorDB and Memgraph adapter implementations are present in the project, but no benchmark results are claimed for them in this submission.
+
+---
+
+# Limitations
+
+The benchmark client does not automatically observe cloud-provider infrastructure specifications or database storage footprint.
+
+Therefore, unless supplied through environment variables, these fields are reported as:
 
 ```text
-
-connect()
-
-clearDatabase()
-
-loadDataset()
-
-countNodes()
-
-countRelationships()
-
-createIndexes()
-
-pointLookup()
-
-filteredLookup()
-
-traverse()
-
-aggregation()
-
-writeOperation()
-
-close()
-
+Not observable from benchmark client.
 ```
 
+The results are also dependent on:
 
+* Database deployment configuration
+* Network latency
+* Cloud infrastructure
+* Database version
+* Index configuration
+* Resource availability
+* Concurrent workload conditions
 
-The adapter architecture allows the same logical benchmark workloads to be implemented for multiple graph databases.
+Therefore, the results represent this specific test environment.
 
+---
 
+# Conclusion
 
-\---
+The benchmark successfully validated a common graph dataset containing 91,489 nodes and 200,000 relationships and measured Neo4j and CognoDB using the same workload methodology.
 
+Neo4j produced substantially lower measured latency and higher mixed-workload throughput in the recorded execution, while CognoDB was successfully connected and benchmarked as a cloud-hosted graph database.
 
-
-\## Current Adapter Status
-
-
-
-The repository currently contains adapter classes for:
-
-
-
-\* CognoDB
-
-\* Neo4j
-
-\* Memgraph
-
-\* FalkorDB
-
-
-
-\### CognoDB
-
-
-
-The CognoDB adapter is the currently implemented and executed adapter.
-
-
-
-\### Neo4j
-
-
-
-The Neo4j adapter class currently exists in the repository.
-
-
-
-It has not yet been independently benchmarked in the current submission.
-
-
-
-\### Memgraph
-
-
-
-The Memgraph adapter class currently exists in the repository.
-
-
-
-It has not yet been independently benchmarked in the current submission.
-
-
-
-\### FalkorDB
-
-
-
-The FalkorDB adapter class currently exists in the repository.
-
-
-
-It has not yet been independently benchmarked in the current submission.
-
-
-
-The comparison database adapters should \*\*not\*\* be treated as independently measured implementations until they are connected to their respective database systems and executed using the same benchmark configuration.
-
-
-
-\---
-
-
-
-\## Limitations
-
-
-
-The current benchmark has the following limitations:
-
-
-
-1\. The current execution reused an existing dataset instead of measuring ingestion.
-
-2\. Ingestion throughput is therefore not included in the current performance results.
-
-3\. Only CognoDB has been executed and measured so far.
-
-4\. The other database adapters have not yet been independently benchmarked.
-
-5\. Cross-database performance comparisons should not be reported until the same workloads are executed against the comparison databases.
-
-6\. CPU and memory consumption are not currently captured in the result JSON.
-
-7\. Network latency and cloud resource variability may affect measured latency.
-
-8\. The current benchmark reports latency and throughput but does not provide a complete cost-per-query analysis.
-
-
-
-These limitations are documented to keep the benchmark results transparent and reproducible.
-
-
-
-\---
-
-
-
-\## Security
-
-
-
-Never commit credentials to Git.
-
-
-
-The following should remain local:
-
-
-
-```text
-
-.env
-
-```
-
-
-
-Credentials should be supplied through environment variables.
-
-
-
-Before publishing the repository, verify:
-
-
-
-```powershell
-
-git status
-
-```
-
-
-
-Also inspect tracked files for accidentally committed credentials.
-
-
-
-If credentials have previously been exposed, rotate them before publishing the repository.
-
-
-
-\---
-
-
-
-\## Current Result Summary
-
-
-
-```text
-
-&#x20;                   Dataset
-
-&#x20;                      |
-
-&#x20;                      v
-
-&#x20;              91,489 nodes
-
-&#x20;             200,000 relationships
-
-&#x20;                      |
-
-&#x20;                      v
-
-&#x20;                   CognoDB
-
-&#x20;                      |
-
-&#x20;      +---------------+---------------+
-
-&#x20;      |               |               |
-
-&#x20;      v               v               v
-
-&#x20;   1-hop            2-hop           3-hop
-
-&#x20;   1028.7ms         1232.7ms        1242.2ms
-
-&#x20;   p50              p50             p50
-
-&#x20;      |
-
-&#x20;      +--> Point Lookup
-
-&#x20;      |    1220.7ms p50
-
-&#x20;      |
-
-&#x20;      +--> Filtered Lookup
-
-&#x20;      |    1185.8ms p50
-
-&#x20;      |
-
-&#x20;      +--> Aggregation
-
-&#x20;      |    1140.5ms p50
-
-&#x20;      |
-
-&#x20;      +--> Mixed Workload
-
-&#x20;           6.912 queries/sec
-
-&#x20;                      |
-
-&#x20;                      v
-
-&#x20;             results/cognodb.json
-
-```
-
-
-
-\---
-
-
-
-\## Conclusion
-
-
-
-The current implementation successfully demonstrates an end-to-end graph database benchmarking workflow against CognoDB.
-
-
-
-The benchmark:
-
-
-
-\* Connects to a cloud-hosted CognoDB instance
-
-\* Reuses a fixed graph dataset
-
-\* Verifies node and relationship counts
-
-\* Creates/verifies indexes
-
-\* Executes 1-hop traversal
-
-\* Executes 2-hop traversal
-
-\* Executes 3-hop traversal with a bounded result set
-
-\* Executes point lookup
-
-\* Executes filtered lookup
-
-\* Executes aggregation
-
-\* Executes a concurrent mixed workload
-
-\* Measures p50 latency
-
-\* Measures p95 latency
-
-\* Measures mixed-workload throughput
-
-\* Produces a machine-readable JSON result
-
-
-
-The latest successful benchmark execution completed with:
-
-
-
-```text
-
-91,489 nodes
-
-200,000 relationships
-
-
-
-1-hop:
-
-p50 = 1228.467 ms
-
-p95 = 1532.337 ms
-
-
-
-2-hop:
-
-p50 = 1228.449 ms
-
-p95 = 1594.486 ms
-
-
-
-3-hop:
-
-p50 = 1227.496 ms
-
-p95 = 1637.764 ms
-
-
-
-Point lookup:
-
-p50 = 1230.397 ms
-
-p95 = 3199.029 ms
-
-
-
-Filtered lookup:
-
-p50 = 1228.852 ms
-
-p95 = 1945.404 ms
-
-
-
-Aggregation:
-
-p50 = 1228.654 ms
-
-p95 = 1696.725 ms
-
-
-
-Mixed workload:
-
-6.912 queries/sec
-
-```
-
-
-
-This result represents the current CognoDB benchmark run and provides a baseline for future benchmarking against other graph database systems.
-
-
-
+The benchmark framework is extensible through the `DatabaseAdapter` abstraction and contains adapter implementations for additional graph databases.

@@ -1,0 +1,12 @@
+﻿target/
+.env
+*.log
+results/*.tmp
+scripts/__pycache__/
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+
+data/soc-pokec-relationships.txt.gz

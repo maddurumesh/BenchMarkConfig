@@ -1,0 +1,33 @@
+{
+  "database" : "CognoDB",
+  "nodeCount" : 91489,
+  "relationshipCount" : 200000,
+  "loadTimeMs" : 0,
+  "nodesPerSecond" : 0.0,
+  "relationshipsPerSecond" : 0.0,
+  "p50" : {
+    "1-hop" : 1228.467,
+    "2-hop" : 1228.4485,
+    "3-hop" : 1227.496,
+    "point-lookup" : 1230.397,
+    "filtered-lookup" : 1228.852,
+    "aggregation" : 1228.654
+  },
+  "p95" : {
+    "1-hop" : 1532.3372,
+    "2-hop" : 1594.4860999999999,
+    "3-hop" : 1637.7638,
+    "point-lookup" : 3199.029199999999,
+    "filtered-lookup" : 1945.4042,
+    "aggregation" : 1696.72475
+  },
+  "mixedQueriesPerSecond" : 6.911550145447526,
+  "warmupIterations" : 20,
+  "measurementIterations" : 100,
+  "concurrency" : 10,
+  "instanceSpecs" : "Not observable from benchmark client.",
+  "datasetSource" : "SNAP soc-Pokec social network dataset; fixed benchmark subset containing 91489 nodes and 200000 relationships.",
+  "loadMethod" : "Existing dataset reused for this benchmark execution. No database clear or dataset reload was performed. Ingestion throughput was therefore not measured.",
+  "footprint" : "Not observable from benchmark client.",
+  "notes" : "Dataset reused; warm-up: 20; measurement: 100; concurrency: 10; read/write mix: 80/20; random start-node selection uses fixed seed 20260806; ingestion throughput was not measured in this execution."
+}
